@@ -1,0 +1,87 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "ds-gfs-append/api/proto;proto";
+
+import "common.proto";
+
+service Master {
+  rpc GetFileChunksInfo(GetFileChunksInfoRequest) returns (GetFileChunksInfoResponse) {}
+  rpc CreateFile(CreateFileRequest) returns (Status) {}
+  rpc DeleteFile(DeleteFileRequest) returns (Status) {}
+  rpc RenameFile(RenameFileRequest) returns (Status) {}
+  rpc HeartBeat(HeartBeatRequest) returns (HeartBeatResponse) {}
+  rpc RequestLease(RequestLeaseRequest) returns (RequestLeaseResponse) {}
+  rpc AllocateChunk(AllocateChunkRequest) returns (AllocateChunkResponse) {}
+  rpc ListFiles(ListFilesRequest) returns (ListFilesResponse) {}
+}
+
+message GetFileChunksInfoRequest { string filename = 1; }
+
+message ChunkReplica {
+  string handle = 1;
+  ChunkLocation primary = 2;
+  repeated ChunkLocation secondaries = 3;
+  int64 version = 4;
+  int64 lease_expiration_unix = 5;
+}
+
+message GetFileChunksInfoResponse { repeated ChunkReplica chunks = 1; }
+
+message CreateFileRequest { string filename = 1; }
+message DeleteFileRequest { string filename = 1; }
+message RenameFileRequest { string old_name = 1; string new_name = 2; }
+
+message HeartBeatChunk {
+  string handle = 1;
+  int64 version = 2;
+  int64 size_bytes = 3;
+}
+
+message HeartBeatRequest {
+  string address = 1;
+  repeated HeartBeatChunk chunks = 2;
+}
+
+message HeartBeatResponse { repeated HeartBeatCommand commands = 1; }
+
+enum CommandType {
+  COMMAND_NONE = 0;
+  COMMAND_DELETE_CHUNK = 1;
+  COMMAND_REPLICATE_CHUNK = 2;
+}
+
+message HeartBeatCommand {
+  CommandType type = 1;
+  string chunk = 2;
+  string target = 3;
+}
+
+message RequestLeaseRequest {
+  string chunk_handle = 1;
+  string requester = 2;
+}
+
+message RequestLeaseResponse {
+  bool granted = 1;
+  ChunkLocation primary = 2;
+  repeated ChunkLocation secondaries = 3;
+  int64 lease_expiration_unix = 4;
+  int64 version = 5;
+}
+
+message AllocateChunkRequest {
+  string filename = 1;
+}
+
+message AllocateChunkResponse {
+  string handle = 1;
+  repeated ChunkLocation replicas = 2;
+}
+
+message ListFilesRequest {}
+
+message ListFilesResponse {
+  repeated string filenames = 1;
+}

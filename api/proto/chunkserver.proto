@@ -1,0 +1,107 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "ds-gfs-append/api/proto;proto";
+
+import "common.proto";
+
+service ChunkServer {
+  // Client streams raw data; server replies with a DataId to reference it.
+  rpc PushData(stream PushDataRequest) returns (PushDataResponse) {}
+
+  // Client (primary) asks to append the previously pushed data.
+  rpc AppendRecord(AppendRecordRequest) returns (AppendRecordResponse) {}
+
+  // Primary forwards append to secondaries.
+  rpc ForwardAppend(ForwardAppendRequest) returns (ForwardAppendResponse) {}
+
+  // Query completion state for an idempotent append.
+  rpc CheckIdempotency(IdempotencyStatusRequest) returns (IdempotencyStatusResponse) {}
+
+  // Read raw bytes from a chunk at the specified offset.
+  rpc ReadChunk(ReadChunkRequest) returns (ReadChunkResponse) {}
+
+  // Client requests primary to write data at an explicit offset.
+  rpc WriteChunk(WriteChunkRequest) returns (WriteChunkResponse) {}
+
+  // Primary forwards write to secondaries.
+  rpc ForwardWrite(ForwardWriteRequest) returns (ForwardWriteResponse) {}
+}
+
+message PushDataRequest { string data_id = 1; bytes data = 2; }
+message PushDataResponse {
+  string data_id = 1;
+  uint32 checksum = 2;
+  int64 size = 3;
+}
+
+message AppendRecordRequest {
+  string chunk_handle = 1;
+  string data_id = 2;
+  repeated ChunkLocation secondaries = 3;
+  int64 chunk_version = 4;
+  string idempotency_id = 5;
+}
+message AppendRecordResponse {
+  bool success = 1;
+  int64 offset = 2;
+  int64 committed_version = 3;
+}
+
+enum AppendPhase {
+  APPEND_PHASE_UNKNOWN = 0;
+  APPEND_PHASE_PREPARE = 1;
+  APPEND_PHASE_COMMIT = 2;
+  APPEND_PHASE_ABORT = 3;
+}
+
+message ForwardAppendRequest {
+  string chunk_handle = 1;
+  string data_id = 2;
+  int64 offset = 3;
+  int64 chunk_version = 4;
+  AppendPhase phase = 5;
+  int64 reserved_length = 6;
+  string idempotency_id = 7;
+}
+message ForwardAppendResponse { bool success = 1; }
+
+message ReadChunkRequest {
+  string chunk_handle = 1;
+  int64 offset = 2;
+  int64 length = 3;
+}
+
+message ReadChunkResponse {
+  bytes data = 1;
+}
+
+message WriteChunkRequest {
+  string chunk_handle = 1;
+  string data_id = 2;
+  repeated ChunkLocation secondaries = 3;
+  int64 chunk_version = 4;
+  int64 offset = 5;
+  bool bypass_lease = 6;
+}
+
+message WriteChunkResponse { bool success = 1; }
+
+message ForwardWriteRequest {
+  string chunk_handle = 1;
+  string data_id = 2;
+  int64 offset = 3;
+  int64 chunk_version = 4;
+}
+
+message ForwardWriteResponse { bool success = 1; }
+
+message IdempotencyStatusRequest {
+  string chunk_handle = 1;
+  string idempotency_id = 2;
+}
+
+message IdempotencyStatusResponse {
+  bool completed = 1;
+}

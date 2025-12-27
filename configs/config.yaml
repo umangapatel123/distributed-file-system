@@ -1,0 +1,15 @@
+master:
+  host: "127.0.0.1"
+  port: 50051
+
+chunkserver:
+  base_port: 6000
+  data_dir: "data"
+  heartbeat_interval_sec: 5
+
+chunk:
+  size_bytes: 67108864 # 64MB
+  replication: 3
+
+lease:
+  duration_sec: 60

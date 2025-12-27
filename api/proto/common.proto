@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+package proto;
+
+option go_package = "ds-gfs-append/api/proto;proto";
+
+message ChunkHandle {
+  string handle = 1;
+}
+
+message ChunkLocation {
+  string address = 1; // host:port
+}
+
+message Status {
+  int32 code = 1;
+  string message = 2;
+}

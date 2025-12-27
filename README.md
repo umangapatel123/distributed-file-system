@@ -391,7 +391,6 @@ go run cmd/chunkserver/main.go -loglevel DEBUG
 
 - **Technical Report**: See [REPORT.md](REPORT.md) for comprehensive system documentation
 - **Presentation**: See [PPT.pdf](PPT.pdf) for visual overview
-- **Testing Guide**: See [internal/chunkserver/TESTING_README.md](internal/chunkserver/TESTING_README.md)
 
 ## Implementation Highlights
 
@@ -416,32 +415,3 @@ The system implements a modified two-phase commit protocol with:
 - **Batched Heartbeats**: Reduces network overhead
 - **Lease Caching**: Reduces master load for repeated writes
 - **Asynchronous Replication**: Non-blocking secondary writes
-
-## Contributing
-
-This is an academic project. For questions or issues, please refer to the technical report or contact the author.
-
-## Author
-
-**Umang Patel**
-- Course: Distributed Systems (Semester 7)
-- Date: December 2025
-
-## License
-
-Licensed under the Apache License, Version 2.0
-
----
-
-## Learning Objectives Achieved
-
-This project demonstrates:
-- Distributed system design patterns
-- RPC-based inter-component communication
-- Replication and consistency protocols
-- Fault tolerance mechanisms
-- Performance benchmarking and optimization
-- Production-grade error handling
-- Comprehensive testing strategies
-
-For detailed implementation details, architectural decisions, and performance analysis, please refer to [REPORT.md](REPORT.md).
